@@ -2,7 +2,7 @@ const app = require('../app');
 const debug = require('debug')('backend:server');
 const http = require('http');
 
-const port = normalizePort(process.env.PORT || '8000');
+const port = normalizePort(process.env.PORT || '9090');
 app.set('port', port);
 
 const server = http.createServer(app);

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
   module.exports = () => {
-    mongoose.connect('mongodb://aardv1:sadece0ben@ds011432.mlab.com:11432/heroku_swz5qp09', { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false});    
+    mongoose.connect('mongodb+srv://aard_v2:sadece0ben@aardsoftware.k5a3c.mongodb.net/<dbname>?retryWrites=true&w=majority', { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false});    
       mongoose.connection.on('open', () => {
       });
         mongoose.connection.on('error', (err) => {

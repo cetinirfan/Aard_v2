@@ -10,6 +10,8 @@ app.set('api_key', config.api_key);
 
 const index = require('./routes/index');
 const users = require('./routes/users');
+const cron = require('./routes/cron');
+const question = require('./routes/question');
 
 const db = require('./services/mongodb.js')();
 
@@ -26,6 +28,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users)
+app.use('/cron', cron)
+app.use('/question', question)
 
 app.use((req, res, next) => {
   const err = new Error('Not Found');

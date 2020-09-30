@@ -11,9 +11,51 @@ const Users = new Schema({
     mail:{
         type:String
     },
-    userPhoto:{
+    referalCount:{
+        type:Number,
+        default:1
+    },
+    ticket:{
+        type:Number,
+        default:4
+    },
+    diamond:{
+        type:Number,
+        default:100
+    },
+    luckWheel:{
+        type:Number,
+        default:1
+    },
+    weeklyScore:{
+        type:Number,
+        default:0
+    },
+    monthlyScore:{
+        type:Number,
+        default:0
+    },
+    allScore:{
+        type:Number,
+        default:0
+    },
+    userAvatar:{
         type:String,
         default:'/uploads/default/user.png',
+    },
+    avatars:[],
+    userFrame:{
+        type:String,
+        default:'/uploads/default/user.png',
+    },
+    dailyQuestions:{
+            type:Number,
+            default:1
+    },
+    frames:[],
+    oneSignal:{ 
+        type:String,
+        default:'a'
     },
     userBanType:{
         type:Number,
@@ -22,6 +64,7 @@ const Users = new Schema({
     userMailCode:{
         type:String,
     },
+    questionId:[],
     userCreated:{
         type:Date,
         default:Date.now()

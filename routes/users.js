@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt =require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const Users = require('../services/modals/Users');
+const Store = require('../services/modals/Store');
 const verifyToken = require('../services/middleware/verify-token');
 const multer =require('multer');
 const fs =require('fs');
@@ -10,6 +11,28 @@ const randomInt = require('random-int');
 const gnp = require('generate-password');
 require('dotenv').config();
 const mailCodeSend = require('../services/modals/mailCodeSend');
+
+router.post('/saveUserToken/',verifyToken,(req,res)=>{
+  const {oneSignalToken} =req.body;
+  Users.updateOne({_id:req.user_id},{$set:{oneSignal:oneSignalToken}})
+  .then(data=>{     
+     res.json({status:true,message:'başarılı'});
+  })
+  .catch(err=>{
+      res.json(err);
+  })
+})
+
+router.post('/refreshUserToken/',verifyToken,(req,res)=>{
+  const {oneSignalToken} =req.body;
+  Users.findByIdAndUpdate({_id:req.user_id},{$set:{oneSignal:oneSignalToken}})
+  .then(data=>{      
+     res.json({status:true,message:'başarılı'});
+  })
+  .catch(err=>{
+      res.json(err);
+  })
+}) 
 
 
 router.post('/register',(req,res,next)=>{
@@ -279,6 +302,145 @@ router.post('/setProfile',verifyToken,(req,res)=>{
 		}).catch(err =>{
 		res.json(err);
 	})
+});
+
+router.post('/setAvatar',verifyToken,(req,res)=>{
+	const {url} =req.body;
+	  Users.findByIdAndUpdate({_id:req.user_id}, { $set: {
+      userAvatar:url
+		} },{new: true})
+		.exec()
+		.then(data=>{
+			res.json(data);
+		}).catch(err =>{
+		res.json(err);
+	})
+});
+
+router.post('/setFrame',verifyToken,(req,res)=>{
+	const {url} =req.body;
+	  Users.findByIdAndUpdate({_id:req.user_id}, { $set: {
+      userFrame:url
+		} },{new: true})
+		.exec()
+		.then(data=>{
+			res.json(data);
+		}).catch(err =>{
+		res.json(err);
+	})
+});
+
+router.get('/sortScore',verifyToken,(req,res)=>{
+  const sortedWeakly = [];
+  const sortedMonthly = [];
+  const sortedAllTime = [];
+  const proimsev1 = Users.aggregate(
+    [
+      { $match :{} },
+      { $sort : { weeklyScore : -1} },
+      { $limit: 5 }
+  ]);
+  proimsev1.then(data=>{
+    sortedWeakly.push(data)
+    const promisev2 = Users.aggregate(
+      [
+        { $match :{} },
+        { $sort : { monthlyScore : -1} },
+        { $limit: 5 }
+    ]);
+    promisev2.then(data=>{
+      sortedMonthly.push(data)
+      const promisev3 =Users.aggregate(
+        [
+          { $match :{} },
+          { $sort : { allScore : -1} }, 
+          { $limit: 5 }
+      ]);
+      promisev3.then(data=>{
+        sortedAllTime.push(data)
+        res.json({'Weakly':sortedWeakly,'Monthly':sortedMonthly,'AllTime':sortedAllTime})
+      })
+    })
+  })
+});
+
+router.post('/whatchVideo',verifyToken,(req,res)=>{
+  Users.findOne({_id:req.user_id},(err,user)=>{
+    if(user.ticket<4){
+      const newTicketCount = user.ticket+1;
+      Users.updateOne({_id:req.user_id}, { $set: {
+        ticket:newTicketCount
+      } },{new: true})
+      .exec()
+      .then(data=>{
+        res.json({
+          status: true,
+          message: 'Bilet hakkı eklendi.'});
+      }).catch(err =>{
+      res.json(err);
+    })
+    }else{
+      res.json({
+        status: false,
+        message: 'Bilet sayısı dolu.'});
+    }
+  })
+});
+
+router.post('/referal',verifyToken,(req,res)=>{
+  const {userName} =req.body;
+  Users.findOne({_id:req.user_id},(err,user)=>{
+    if(user.referalCount === 1){
+      const newDiamondCount = user.diamond+30;
+      const promise_v1 = Users.updateOne({_id:req.user_id}, { $set: {
+        diamond:newDiamondCount,
+        referalCount:0
+      } },{new: true})
+      promise_v1.then(data=>{
+        Users.findOne({userName:userName},(err,referalUser)=>{
+          if(referalUser){
+            const newDiamondCount = referalUser.diamond+30;
+          const promise_v2 = Users.updateOne({_id:referalUser._id}, { $set: {
+            diamond:newDiamondCount
+          } },{new: true})
+          promise_v2.then(data=>{
+            res.json({
+              status: true,
+              message: 'Elmasınız eklendi.'});
+          })
+          }else{
+            es.json({
+              status: false,
+              message: 'Kullanıcı adı hatalı.'});
+          }
+        })
+      }).catch(err =>{
+      res.json(err);
+    })
+    }else{
+      res.json({
+        status: false,
+        message: 'Referans olarak sadece bir kişiyi gösterebilirsiniz.'});
+    }
+  })
+});
+
+router.post('/store',verifyToken,(req,res)=>{
+  const {userName,product,productCount,price} = req.body; 
+    const nowDate = Date.now();
+    const NewStore = new Store({
+      userName,
+      product,
+      productCount,
+      price,
+      created:nowDate,
+      });
+      const promise = NewStore.save();
+				promise.then((data)=>{
+					res.json({data});
+				}).catch((err)=>{
+					res.json(err);
+				})
 });
 
 module.exports = router;
